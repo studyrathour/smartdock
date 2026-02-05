@@ -1307,16 +1307,10 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     }
 
     private fun placeRunningApps() {
-        val layoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
+        val layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        if (sharedPreferences.getBoolean("center_running_apps", true)) {
-            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT)
-        } else {
-            layoutParams.addRule(RelativeLayout.END_OF, R.id.nav_panel)
-            layoutParams.addRule(RelativeLayout.START_OF, R.id.system_tray)
-        }
         tasksGv.layoutParams = layoutParams
     }
 
@@ -1386,13 +1380,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     }
 
     private fun updateDockShape() {
-        dockLayout.setBackgroundResource(
-            if (sharedPreferences.getBoolean(
-                    "round_dock",
-                    false
-                )
-            ) R.drawable.round_rect else R.drawable.rect
-        )
+        dockLayout.setBackgroundResource(R.drawable.round_rect)
         updateDockBackgroundColor()
     }
 
@@ -1916,7 +1904,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
 
         dockHeight =
             Utils.dpToPx(context, sharedPreferences.getString("dock_height", "56")!!.toInt())
-        dockLayoutParams = Utils.makeWindowParams(-1, dockHeight, context, preferSecondaryDisplay)
+        dockLayoutParams = Utils.makeWindowParams(-2, dockHeight, context, preferSecondaryDisplay)
         dockLayoutParams.screenOrientation =
             if (sharedPreferences.getBoolean("lock_landscape", false))
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -1931,7 +1919,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         loadPinnedApps()
         placeRunningApps()
 
-        dockLayoutParams.gravity = Gravity.BOTTOM or Gravity.START
+        dockLayoutParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+        dockLayoutParams.y = Utils.dpToPx(context, 15)
         windowManager.addView(dock, dockLayoutParams)
 
         //Dock handle
