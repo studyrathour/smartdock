@@ -173,6 +173,13 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     private lateinit var displayManager: DisplayManager
     private lateinit var displayListener: DisplayManager.DisplayListener
     private var iconPackUtils: IconPackUtils? = null
+    private var statusBarOverlay: StatusBarOverlay? = null
+
+    // Zoom cache
+    private var enableZoom = false
+    private var zoomRadiusPx = 0
+    private var maxZoomScale = 1.5f
+
     override fun onCreate() {
         super.onCreate()
         db = DBHelper(this)
@@ -184,9 +191,10 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
         dockHandler = Handler(Looper.getMainLooper())
-        if (sharedPreferences.getString("icon_pack", "")!!.isNotEmpty()) {
-            iconPackUtils = IconPackUtils(this)
-        }
+        // Always initialize IconPackUtils to support custom icons/themes even without an icon pack
+        iconPackUtils = IconPackUtils(this)
+
+        updateZoomPrefs()
     }
 
     override fun onServiceConnected() {
@@ -410,6 +418,17 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            if (event.packageName != null) {
+                val pm = packageManager
+                try {
+                    val appInfo = pm.getApplicationInfo(event.packageName.toString(), 0)
+                    val label = pm.getApplicationLabel(appInfo).toString()
+                    statusBarOverlay?.updateAppName(label)
+                } catch (e: Exception) {}
+            }
+        }
+
         if (!isPinned)
             return
 
@@ -1177,6 +1196,18 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         val icon = view.findViewById<ImageView>(R.id.pin_entry_iv)
         ColorUtils.applySecondaryColor(context, sharedPreferences, icon)
         val text = view.findViewById<TextView>(R.id.pin_entry_tv)
+
+        val editLayout = view.findViewById<LinearLayout>(R.id.pin_entry_edit)
+        val editIcon = view.findViewById<ImageView>(R.id.pin_entry_edit_iv)
+        ColorUtils.applySecondaryColor(context, sharedPreferences, editIcon)
+        editLayout.setOnClickListener {
+            val intent = Intent(context, cu.axel.smartdock.activities.IconPickerActivity::class.java)
+            intent.putExtra("package_name", app.packageName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            windowManager.removeView(view)
+        }
+
         if (AppUtils.isPinned(context, app, AppUtils.DOCK_PINNED_LIST)) {
             icon.setImageResource(R.drawable.ic_unpin)
             text.setText(R.string.unpin)
@@ -1222,12 +1253,9 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             applyTheme()
         else if (preference == "menu_icon_uri")
             updateMenuIcon()
-        else if (preference.startsWith("icon_")) {
-            val iconPack = sharedPreferences.getString("icon_pack", "")!!
-            iconPackUtils = if (iconPack.isNotEmpty()) {
-                IconPackUtils(this)
-            } else
-                null
+        else if (preference.startsWith("icon_") || preference == "dock_theme_style") {
+            // Always initialize to support themes/custom icons
+            iconPackUtils = IconPackUtils(this)
 
             updateRunningTasks(true)
             updateAppMenu(true)
@@ -1272,7 +1300,25 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             preferSecondaryDisplay = sharedPreferences.getBoolean("prefer_last_display", false)
             if (DeviceUtils.getDisplays(this).size > 1)
                 restartUI()
+        } else if (preference == "enable_status_bar") {
+            if (sharedPreferences.getBoolean("enable_status_bar", false)) {
+                statusBarOverlay?.show()
+            } else {
+                statusBarOverlay?.hide()
+            }
+        } else if (preference == "status_bar_alpha") {
+             // Not implemented yet in StatusBarOverlay fully (using default background)
+             // But we should reload or update
+        } else if (preference == "enable_zoom_effect" || preference == "zoom_radius_dp" || preference == "dock_icon_max_scale") {
+            updateZoomPrefs()
         }
+    }
+
+    private fun updateZoomPrefs() {
+        enableZoom = sharedPreferences.getBoolean("enable_zoom_effect", false)
+        val radiusDp = sharedPreferences.getString("zoom_radius_dp", "150")?.toIntOrNull() ?: 150
+        zoomRadiusPx = Utils.dpToPx(context, radiusDp)
+        maxZoomScale = sharedPreferences.getString("dock_icon_max_scale", "1.5")?.toFloatOrNull() ?: 1.5f
     }
 
     private fun updateDockTrigger() {
@@ -1769,6 +1815,11 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         orientationValue =
             if (orientation == Configuration.ORIENTATION_PORTRAIT) "" else "_landscape"
 
+        statusBarOverlay = StatusBarOverlay(context)
+        if (sharedPreferences.getBoolean("enable_status_bar", false)) {
+            statusBarOverlay?.show()
+        }
+
         createDock()
         createHotCorners()
         createAppMenu()
@@ -1788,6 +1839,25 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         tasksGv = dock!!.findViewById(R.id.apps_lv)
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         tasksGv.layoutManager = layoutManager
+
+        // Zoom Effect Listeners
+        tasksGv.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
+                applyZoomEffect(event.rawX)
+            } else if (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_CANCEL) {
+                resetZoom()
+            }
+            false
+        }
+        tasksGv.setOnHoverListener { _, event ->
+            if (event.action == MotionEvent.ACTION_HOVER_MOVE || event.action == MotionEvent.ACTION_HOVER_ENTER) {
+                applyZoomEffect(event.rawX)
+            } else if (event.action == MotionEvent.ACTION_HOVER_EXIT) {
+                resetZoom()
+            }
+            false
+        }
+
         backBtn = dock!!.findViewById(R.id.back_btn)
         homeBtn = dock!!.findViewById(R.id.home_btn)
         recentBtn = dock!!.findViewById(R.id.recents_btn)
@@ -2070,6 +2140,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             appMenu?.let { windowManager.removeViewImmediate(it) }
             topRightCorner?.let { windowManager.removeViewImmediate(it) }
             bottomRightCorner?.let { windowManager.removeViewImmediate(it) }
+            statusBarOverlay?.hide()
         } catch (_: Exception) {
         }
 
@@ -2078,6 +2149,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         appMenu = null
         topRightCorner = null
         bottomRightCorner = null
+        statusBarOverlay = null
     }
 
     inner class HotCornersHoverListener(val key: String) : View.OnHoverListener {
@@ -2093,6 +2165,43 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                 }, sharedPreferences.getString("hot_corners_delay", "300")!!.toInt().toLong())
             }
             return false
+        }
+    }
+
+    private fun applyZoomEffect(eventX: Float) {
+        if (!enableZoom) return
+
+        val minScale = 1.0f
+
+        for (i in 0 until tasksGv.childCount) {
+            val child = tasksGv.getChildAt(i)
+            val childLocation = IntArray(2)
+            child.getLocationOnScreen(childLocation)
+            val childCenterXScreen = childLocation[0] + child.width / 2f
+
+            val dist = kotlin.math.abs(eventX - childCenterXScreen)
+
+            if (dist < zoomRadiusPx) {
+                // Smooth cosine interpolation
+                val smoothScale = minScale + (maxZoomScale - minScale) *
+                        (0.5f * (1 + kotlin.math.cos(dist / zoomRadiusPx * Math.PI))).toFloat()
+
+                child.scaleX = smoothScale
+                child.scaleY = smoothScale
+                child.translationY = - (child.height * (smoothScale - 1)) / 2
+            } else {
+                child.scaleX = minScale
+                child.scaleY = minScale
+                child.translationY = 0f
+            }
+        }
+    }
+
+    private fun resetZoom() {
+        if (!enableZoom) return
+        for (i in 0 until tasksGv.childCount) {
+            val child = tasksGv.getChildAt(i)
+            child.animate().scaleX(1f).scaleY(1f).translationY(0f).setDuration(150).start()
         }
     }
 }

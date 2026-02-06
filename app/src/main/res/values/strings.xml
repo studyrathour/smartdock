@@ -301,6 +301,7 @@
     <string name="favorites">Favorites</string>
     <string name="app_frozen">App frozen</string>
     <string name="remove">Remove</string>
+    <string name="edit_icon">Edit icon</string>
 
     <!-- Desktop -->
     <string name="lets_start">Let\'s start</string>

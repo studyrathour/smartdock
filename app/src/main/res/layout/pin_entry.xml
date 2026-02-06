@@ -69,5 +69,32 @@
 
 	</LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/pin_entry_edit"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp">
+
+        <ImageView
+            android:layout_height="32dp"
+            android:layout_width="32dp"
+            android:src="@drawable/ic_manage"
+            android:id="@+id/pin_entry_edit_iv"
+            android:background="@drawable/circle"
+            android:padding="5dp"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/edit_icon"
+            android:textSize="16sp"
+            android:textColor="#FFFFFFFF"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"/>
+
+    </LinearLayout>
+
 </LinearLayout>
 

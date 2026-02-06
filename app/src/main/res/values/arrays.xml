@@ -15,6 +15,20 @@
         <item>material_u</item>
         <item>custom</item>
     </string-array>
+
+    <string-array name="dock_themes">
+        <item>System</item>
+        <item>Default</item>
+        <item>Clear</item>
+        <item>Dark</item>
+    </string-array>
+
+    <string-array name="dock_theme_values">
+        <item>system</item>
+        <item>default</item>
+        <item>clear</item>
+        <item>dark</item>
+    </string-array>
     
     <string-array name="icon_shapes">
         <item>@string/circle</item>

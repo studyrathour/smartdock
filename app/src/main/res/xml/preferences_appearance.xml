@@ -50,4 +50,38 @@
             android:key="tint_indicators"
             android:title="@string/tint_indicators_title" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="macOS Style">
+        <ListPreference
+            android:defaultValue="system"
+            android:entries="@array/dock_themes"
+            android:entryValues="@array/dock_theme_values"
+            android:key="dock_theme_style"
+            android:title="Dock Icon Theme" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="enable_zoom_effect"
+            android:title="Enable Zoom Effect" />
+
+        <EditTextPreference
+            android:defaultValue="150"
+            android:key="zoom_radius_dp"
+            android:dependency="enable_zoom_effect"
+            android:title="Zoom Radius (dp)"
+            android:inputType="number" />
+
+         <EditTextPreference
+            android:defaultValue="1.5"
+            android:key="dock_icon_max_scale"
+            android:dependency="enable_zoom_effect"
+            android:title="Max Zoom Scale (e.g. 1.5)"
+            android:inputType="numberDecimal"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="enable_status_bar"
+            android:title="Enable Status Bar" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

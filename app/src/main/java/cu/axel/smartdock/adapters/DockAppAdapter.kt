@@ -15,6 +15,10 @@ import cu.axel.smartdock.utils.AppUtils
 import cu.axel.smartdock.utils.ColorUtils
 import cu.axel.smartdock.utils.IconPackUtils
 import cu.axel.smartdock.utils.Utils
+import cu.axel.smartdock.utils.CustomIconUtils
+import cu.axel.smartdock.utils.ThemeUtils
+import coil.load
+import android.net.Uri
 
 class DockAppAdapter(
     private val context: Context, private var apps: ArrayList<DockApp>,
@@ -72,10 +76,31 @@ class DockAppAdapter(
             viewHolder.runningIndicator.alpha = 0f
             viewHolder.taskCounter.alpha = 0f
         }
-        if (iconPackUtils != null)
-            viewHolder.iconIv.setImageDrawable(iconPackUtils.getAppThemedIcon(app.packageName))
-        else
-            viewHolder.iconIv.setImageDrawable(app.icon)
+
+        val customPath = CustomIconUtils.getCustomIconPath(context, app.packageName)
+        var handled = false
+        if (customPath != null) {
+            viewHolder.iconIv.load(Uri.parse(customPath))
+            handled = true
+        } else {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            val themeName = prefs.getString("dock_theme_style", "system") ?: "system"
+            if (themeName != "system") {
+                val themePath = ThemeUtils.getThemeIconPath(context, themeName, app.name)
+                if (themePath != null) {
+                    viewHolder.iconIv.load(Uri.parse(themePath))
+                    handled = true
+                }
+            }
+        }
+
+        if (!handled) {
+            if (iconPackUtils != null)
+                viewHolder.iconIv.setImageDrawable(iconPackUtils.getAppThemedIcon(app.packageName))
+            else
+                viewHolder.iconIv.setImageDrawable(app.icon)
+        }
+
         if (iconBackground != -1) {
             viewHolder.iconIv.setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
             viewHolder.iconIv.setBackgroundResource(iconBackground)
