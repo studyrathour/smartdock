@@ -14,12 +14,13 @@
 > Task :app:generateReleaseResources
 > Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksRelease UP-TO-DATE
-> Task :app:mergeReleaseResources
-> Task :app:processReleaseMainManifest
-> Task :app:processReleaseManifest
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
 > Task :app:javaPreCompileRelease UP-TO-DATE
 > Task :app:desugarReleaseFileDependencies UP-TO-DATE
 > Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeReleaseResources
 > Task :app:mergeExtDexRelease UP-TO-DATE
 > Task :app:mergeReleaseArtProfile UP-TO-DATE
 > Task :app:mergeReleaseShaders UP-TO-DATE
@@ -34,54 +35,19 @@
 > Task :app:validateSigningRelease UP-TO-DATE
 > Task :app:writeReleaseAppMetadata UP-TO-DATE
 > Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
-> Task :app:processReleaseManifestForPackage
 > Task :app:processReleaseResources
-> Task :app:optimizeReleaseResources
-> Task :app:compileReleaseKotlin
-w: file:///app/app/src/main/java/cu/axel/smartdock/activities/LauncherActivity.kt:98:74 'startActivityForResult(Intent, Int): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/activities/MacOSSettingsActivity.kt:34:51 'newInstance(): T!' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/AppActionsAdapter.kt:18:13 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/AppShortcutAdapter.kt:18:13 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/AppTaskAdapter.kt:16:13 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/DisplaysAdapter.kt:17:13 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/NotificationAdapter.kt:62:46 'getDrawable(Int): Drawable!' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/NotificationAdapter.kt:64:36 'icon: Int' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/adapters/NotificationAdapter.kt:69:30 'setColorFilter(Int, PorterDuff.Mode): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/fragments/AdvancedPreferences.kt:117:17 'startActivityForResult(Intent!, Int): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/fragments/AdvancedPreferences.kt:129:17 'startActivityForResult(Intent!, Int): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/fragments/AppearancePreferences.kt:88:41 'setColorFilter(Int, PorterDuff.Mode): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/fragments/AppearancePreferences.kt:137:17 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/fragments/AppearancePreferences.kt:141:18 'setColorFilter(Int, PorterDuff.Mode): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/preferences/AppChooserPreference.kt:44:17 Name shadowed: convertView
-w: file:///app/app/src/main/java/cu/axel/smartdock/preferences/NavActionChooserPreference.kt:27:45 Parameter 'button' is never used, could be renamed to _
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:265:36 'ACTION_WALLPAPER_CHANGED: String' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:374:49 The corresponding parameter in the supertype 'OnDockAppClickListener' is named 'view'. This may cause problems when calling this function with named arguments.
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:432:45 The corresponding parameter in the supertype 'OnAppClickListener' is named 'item'. This may cause problems when calling this function with named arguments.
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:1531:25 'setter for isWifiEnabled: Boolean' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:1935:17 Check for instance is always 'true'
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/DockService.kt:2181:21 The expression is unused
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/NotificationService.kt:117:40 'contentView: RemoteViews!' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/NotificationService.kt:163:58 'getDrawable(Int): Drawable!' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/NotificationService.kt:165:48 'icon: Int' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/NotificationService.kt:170:42 'setColorFilter(Int, PorterDuff.Mode): Unit' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/services/NotificationService.kt:476:40 The corresponding parameter in the supertype 'OnNotificationClickListener' is named 'notification'. This may cause problems when calling this function with named arguments.
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:158:48 'FLAG_IS_GAME: Int' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:158:80 'FLAG_IS_GAME: Int' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:188:41 'getRunningTasks(Int): (Mutable)List<ActivityManager.RunningTaskInfo!>!' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:214:34 'id: Int' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:455:9 'get(String!): Any?' is deprecated. Deprecated in Java
-w: file:///app/app/src/main/java/cu/axel/smartdock/utils/AppUtils.kt:462:24 'ACTION_UNINSTALL_PACKAGE: String' is deprecated. Deprecated in Java
-
+> Task :app:compileReleaseKotlin UP-TO-DATE
 > Task :app:compileReleaseJavaWithJavac NO-SOURCE
-> Task :app:dexBuilderRelease
+> Task :app:dexBuilderRelease UP-TO-DATE
+> Task :app:mergeDexRelease UP-TO-DATE
 > Task :app:mergeReleaseGlobalSynthetics UP-TO-DATE
+> Task :app:compileReleaseArtProfile UP-TO-DATE
 > Task :app:generateReleaseLintVitalReportModel
 > Task :app:processReleaseJavaRes UP-TO-DATE
 > Task :app:mergeReleaseJavaResource UP-TO-DATE
-> Task :app:mergeDexRelease
-> Task :app:compileReleaseArtProfile
+> Task :app:optimizeReleaseResources
 > Task :app:lintVitalAnalyzeRelease
-> Task :app:lintVitalReportRelease
+> Task :app:lintVitalReportRelease UP-TO-DATE
 > Task :app:lintVitalRelease
 > Task :app:packageRelease
 > Task :app:createReleaseApkListingFileRedirect UP-TO-DATE
@@ -95,5 +61,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 1m 27s
-47 actionable tasks: 18 executed, 29 up-to-date
+BUILD SUCCESSFUL in 11s
+47 actionable tasks: 10 executed, 37 up-to-date

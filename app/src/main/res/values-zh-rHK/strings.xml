@@ -252,8 +252,6 @@
     <string name="help_and_about">幫助和關於</string>
     <string name="a_launcher_for_android_x86_by_">一個由 Axel358 開發的 Android x86 啟動器</string>
     <string name="help">幫助</string>
-    <string name="smart_dock_its_free_and_open_">Smart Dock 是免費和開源的。在 GitHub 上貢獻</string>
-    <string name="github">GitHub</string>
     <string name="show_help_summary">點擊獲取幫助</string>
     <string name="app_help">    該應用程式應安裝為系統應用程式以獲得正確的權限。
     否則功能將受到限制。
@@ -267,8 +265,6 @@
     <string name="contributors">貢獻者</string>
     <string name="tap_to_see_the_list_of_great_p">點擊查看對 Smart Dock 做出貢獻的偉大人員名單</string>
     <string name="accessibility_service_description">允許執行返回等操作</string>
-    <string name="join_telegram_title">Telegram 群組</string>
-    <string name="join_telegram_summary">有任何問題？加入 Telegram 支持群組</string>
     <string name="gnu_general_public_licence_v3">GNU 通用公共許可證 v3.0</string>
     <string name="license">許可證</string>
     <string name="donate">捐贈</string>

@@ -1428,7 +1428,13 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     }
 
     private fun updateDockShape() {
-        dockLayout.setBackgroundResource(R.drawable.round_rect)
+        val radius = Utils.dpToPx(context, sharedPreferences.getInt("dock_corner_radius", 24))
+        val drawable = android.graphics.drawable.GradientDrawable()
+        drawable.shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+        drawable.cornerRadius = radius.toFloat()
+        drawable.setColor(android.graphics.Color.WHITE) // Will be overridden by updateDockBackgroundColor logic or we should integrate it
+
+        dockLayout.background = drawable
         updateDockBackgroundColor()
     }
 

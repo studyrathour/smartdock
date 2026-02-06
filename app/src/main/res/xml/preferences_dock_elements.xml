@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory android:title="@string/macos_category">
         <SwitchPreferenceCompat
             android:defaultValue="true"
@@ -8,6 +9,13 @@
             android:defaultValue="true"
             android:key="enable_dock_zoom"
             android:title="@string/enable_dock_zoom_title" />
+        <SeekBarPreference
+            android:defaultValue="24"
+            android:key="dock_corner_radius"
+            android:max="50"
+            android:min="0"
+            android:title="Dock Corner Radius (dp)"
+            app:showSeekBarValue="true" />
         <ListPreference
             android:defaultValue="none"
             android:entries="@array/macos_icon_pack_entries"

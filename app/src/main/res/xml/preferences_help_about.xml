@@ -9,15 +9,11 @@
         android:title="@string/help" >
     </Preference>
     <Preference
-        android:key="join_telegram"
-        android:title="@string/join_telegram_title"
-        android:summary="@string/join_telegram_summary" />
-    <Preference
-		android:summary="@string/smart_dock_its_free_and_open_"
-		android:title="@string/github" >
-		<intent android:action="android.intent.action.VIEW"
-		android:data="https://github.com/axel358/smartdock"/>
-	</Preference>
+        android:title="@string/message_developer_title"
+        android:summary="@string/message_developer_summary">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://t.me/SURAJ_EduMaster" />
+    </Preference>
     <Preference
 		android:summary="@string/support_the_project"
 		android:title="@string/donate" >
