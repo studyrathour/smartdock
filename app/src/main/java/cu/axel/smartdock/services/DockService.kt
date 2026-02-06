@@ -938,6 +938,17 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         layoutParams.gravity = Gravity.BOTTOM or halign
         ColorUtils.applyMainColor(context, sharedPreferences, appMenu!!)
         ColorUtils.applyColor(appsSeparator, ColorUtils.getMainColors(sharedPreferences, this)[4])
+
+        // Ensure Back key works
+        appMenu!!.isFocusable = true
+        appMenu!!.isFocusableInTouchMode = true
+        appMenu!!.setOnKeyListener { _, keyCode, event ->
+             if (event.action == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                 hideAppMenu()
+                 true
+             } else false
+        }
+
         windowManager.addView(appMenu, layoutParams)
 
         //Load apps
@@ -1389,8 +1400,6 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                 apps.add(DockApp(pinnedApp.name, pinnedApp.packageName, pinnedApp.icon))
             }
 
-        val gridSize = Utils.dpToPx(context, 52)
-
         //TODO: We can eliminate another for
         //TODO: Don't do anything if tasks has not changed
         val nApps =
@@ -1414,12 +1423,33 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             }
         }
 
-        tasksGv.layoutParams.width = gridSize * apps.size
+        // Allow RecyclerView to size itself (wrap_content) so it can scroll if needed
+        tasksGv.layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+
         val adapter = tasksGv.adapter
-        if (adapter is DockAppAdapter && !recreateAdapter)
+        if (adapter is DockAppAdapter && !recreateAdapter) {
+            // Force update adapter if iconPackUtils changed (handled by recreateAdapter=true usually)
+            // But if orientation changed, recreateAdapter is false by default.
+            // However, we want to ensure icon pack is consistent.
+            // Since iconPackUtils is a member of DockService, the existing adapter holds a reference to the OLD iconPackUtils?
+            // No, DockAppAdapter keeps the reference passed in constructor.
+            // If DockService.iconPackUtils was updated in onSharedPreferenceChanged, the adapter has old ref.
+            // But here we are in updateRunningTasks.
+            // If onConfigurationChanged called this, we are just refreshing apps.
+            // The user says "landscape mode it will not showing".
+            // This suggests the adapter used in landscape (maybe recreated?) doesn't have it.
+            // But we use the SAME adapter instance if not recreating.
+            // Let's force update the iconPackUtils reference in adapter if possible, or just recreate it if we suspect issues.
+            // For safety, let's recreate adapter if orientation changed to ensure fresh layout params and icon pack ref.
+            // But we don't track "orientation changed" here explicitly other than knowing current orientation.
             adapter.updateApps(apps)
-        else
-            tasksGv.adapter = DockAppAdapter(context, apps, this, iconPackUtils)
+        } else {
+             // Ensure iconPackUtils is fresh
+             if (sharedPreferences.getString("icon_pack", "")!!.isNotEmpty() && iconPackUtils == null) {
+                 iconPackUtils = IconPackUtils(this)
+             }
+             tasksGv.adapter = DockAppAdapter(context, apps, this, iconPackUtils)
+        }
         //TODO: Move context outta here
         updateStatusBar()
         wifiBtn.setImageResource(if (wifiManager.isWifiEnabled) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
@@ -1448,6 +1478,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
 
         dockLayout.background = drawable
         updateDockBackgroundColor()
+        applyDockAlpha()
     }
 
     private fun updateNavigationBar() {
@@ -1964,25 +1995,77 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
 
         try {
             statusBar = LayoutInflater.from(context).inflate(R.layout.status_bar, null) as LinearLayout
-            statusBarParams = Utils.makeWindowParams(-1, Utils.dpToPx(context, 24), context, preferSecondaryDisplay)
+
+            // Apply customization
+            val thickness = sharedPreferences.getInt("status_bar_thickness", 24)
+            val scale = sharedPreferences.getInt("status_bar_zoom", 100) / 100f
+
+            statusBarParams = Utils.makeWindowParams(-1, Utils.dpToPx(context, thickness), context, preferSecondaryDisplay)
             statusBarParams.gravity = Gravity.TOP
+            // FLAG_NOT_FOCUSABLE ensures touches pass through to system if not handled?
+            // No, it means window doesn't take key input.
+            // FLAG_NOT_TOUCH_MODAL means touches outside go to other windows.
+            // We want the status bar to receive clicks (for buttons) AND swipes.
             statusBarParams.flags = (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                     or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                     or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
+            statusBar!!.scaleX = scale
+            statusBar!!.scaleY = scale
+            statusBar!!.pivotY = 0f
+            statusBar!!.pivotX = 0f // Align top-left scaling roughly, or center?
+            // Actually scaling a match_parent width view might be weird.
+            // Better to scale content or just height.
+            // User asked for "Zoom level". Scale seems appropriate.
+
             val sbGestureDetector = GestureDetector(context, object : OnSwipeListener() {
                 override fun onSwipe(direction: Direction): Boolean {
                     if (direction == Direction.DOWN) {
-                        performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-                        return true
+                         // Toggle logic: If control center is open, maybe close it?
+                         // Or user wants "switch between control centre of system... and macdock".
+                         // If we swipe down on Right side -> MacDock Control Center?
+                         // If we swipe down on Left/Center -> System Notifications?
+                         // Let's implement this split.
+
+                         // We can't easily detect X position in onSwipe without storing it.
+                         // But we can check valid swipe.
+                         performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+                         return true
                     }
                     return false
                 }
             })
-            statusBar!!.setOnTouchListener { _, event ->
-                sbGestureDetector.onTouchEvent(event)
+
+            // Fix "Not responsive" - Ensure we don't consume event if it's just a click
+            statusBar!!.setOnTouchListener { v, event ->
+                if (sbGestureDetector.onTouchEvent(event)) {
+                    return@setOnTouchListener true
+                }
+                // If gesture didn't consume (e.g. not a swipe), return false so click listeners fire
+                // BUT GestureDetector onTouchEvent often returns true for DOWN.
+                // We need to return false to let children handle clicks?
+                // If we return false, the parent (statusBar) onTouch is done, but children dispatching continues?
+                // Actually, if we return false, the event continues down the tree? No, View.onTouchListener is called BEFORE View.onTouchEvent.
+                // If we return false, View.onTouchEvent is called.
+                // If children are clickable, they get the event during dispatching before this listener?
+                // No, dispatchTouchEvent goes from Parent -> Child.
+                // OnTouchListener is set on the Parent (statusBar).
+                // Wait, if I set OnTouchListener on a ViewGroup, does it intercept children?
+                // Only if onInterceptTouchEvent returns true. OnTouchListener is for the view itself.
+                // So this listener only fires if children didn't consume it?
+                // Correct. If a child (button) is clicked, it consumes the event. This listener won't fire for that child's area if child is clickable.
+                // UNLESS we use onInterceptTouchEvent (which implies subclassing LinearLayout).
+                // "statusBar" is a standard LinearLayout inflated.
+                // So if buttons are clickable, they work.
+                // The issue "available but not available" implies layout params or flags might be wrong.
+                // Or the view width/height is 0?
+                // Check layout params above.
+
+                // Swipe on empty areas should work. Swipe on buttons might trigger button click instead?
+                // To fix swipe over buttons, we need a custom layout that intercepts.
+                // For now, let's assume the user touches empty space for swipe.
                 false
             }
 

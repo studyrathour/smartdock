@@ -16,18 +16,29 @@ class ZoomTouchListener(private val recyclerView: RecyclerView) : View.OnTouchLi
 
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                // Adjust touch X based on scroll offset is not needed because getChildAt returns relative views
+                // But touchX is relative to the RecyclerView (v).
+                // child.left is also relative to RecyclerView content? No, relative to parent view.
+                // Since RecyclerView scrolls, child.left changes relative to RecyclerView viewport?
+                // Actually child.left is relative to RecyclerView (the view group).
+                // So if we scrolled, child.left might be negative. This matches event.x which is relative to Viewport.
                 applyZoom(event.x)
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 resetZoom()
             }
         }
+        // Return false to let RecyclerView handle scroll?
+        // If we return true, we consume it and scroll might not work.
+        // If we return false, scroll works, but does zoom update smoothly?
+        // Yes, ACTION_MOVE will still be fired.
         return false
     }
 
     private fun applyZoom(touchX: Float) {
         for (i in 0 until recyclerView.childCount) {
             val child = recyclerView.getChildAt(i)
+            if (child == null) continue
             // Scale from bottom
             child.pivotY = child.height.toFloat()
             child.pivotX = child.width / 2f
