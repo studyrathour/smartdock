@@ -61,6 +61,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.DebugActivity" />
+        <activity android:name=".activities.IconPickerActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
 
         <service
             android:name=".services.DockService"

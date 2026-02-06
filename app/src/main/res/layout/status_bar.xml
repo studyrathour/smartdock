@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/status_bar_root"
+    android:layout_width="match_parent"
+    android:layout_height="24dp"
+    android:background="#80000000"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+
+    <ImageView
+        android:id="@+id/sb_apple_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_apple"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Apple Menu"
+        android:tint="@android:color/white"/>
+
+    <TextView
+        android:id="@+id/sb_app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SmartDock"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"/>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+    <ImageView
+        android:id="@+id/sb_wifi"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_wifi_on"
+        android:layout_marginEnd="12dp"
+        android:tint="@android:color/white"/>
+
+    <TextView
+        android:id="@+id/sb_battery_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100%"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:layout_marginEnd="4dp"/>
+
+    <ImageView
+        android:id="@+id/sb_battery_icon"
+        android:layout_width="20dp"
+        android:layout_height="12dp"
+        android:src="@drawable/battery_full"
+        android:layout_marginEnd="12dp"
+        android:tint="@android:color/white"/>
+
+    <TextClock
+        android:id="@+id/sb_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:format12Hour="EEE MMM d  h:mm aa"
+        android:format24Hour="EEE MMM d  H:mm"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"/>
+
+    <ImageView
+        android:id="@+id/sb_search"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_search"
+        android:layout_marginStart="12dp"
+        android:tint="@android:color/white"/>
+
+    <ImageView
+        android:id="@+id/sb_control_center"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_settings"
+        android:layout_marginStart="12dp"
+        android:tint="@android:color/white"/>
+
+</LinearLayout>

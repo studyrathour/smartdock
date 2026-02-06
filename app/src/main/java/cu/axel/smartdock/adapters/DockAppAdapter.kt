@@ -50,6 +50,8 @@ class DockAppAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.scaleX = 1f
+        viewHolder.itemView.scaleY = 1f
         val app = apps[position]
         val size = app.tasks.size
         if (size > 0) {

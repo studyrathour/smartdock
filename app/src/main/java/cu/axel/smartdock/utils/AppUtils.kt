@@ -38,7 +38,7 @@ object AppUtils {
                 App(
                     appInfo.loadLabel(context.packageManager).toString(),
                     appInfo.packageName,
-                    appInfo.loadIcon(context.packageManager)
+                    getAppIcon(context, appInfo.packageName)
                 )
             )
         }
@@ -65,7 +65,7 @@ object AppUtils {
                 App(
                     appInfo.label.toString(),
                     appInfo.componentName.packageName,
-                    appInfo.getIcon(0),
+                    getAppIcon(context, appInfo.componentName.packageName),
                     appInfo.componentName,
                     appInfo.user
                 )
@@ -97,7 +97,7 @@ object AppUtils {
                 App(
                     appInfo.label.toString(),
                     appInfo.componentName.packageName,
-                    appInfo.getIcon(0),
+                    getAppIcon(context, appInfo.componentName.packageName),
                     appInfo.componentName,
                     appInfo.user
                 )
@@ -183,7 +183,7 @@ object AppUtils {
     }
 
     fun getRunningTasks(
-        activityManager: ActivityManager, packageManager: PackageManager, max: Int
+        context: Context, activityManager: ActivityManager, packageManager: PackageManager, max: Int
     ): ArrayList<AppTask> {
         val tasksInfo = activityManager.getRunningTasks(max)
         currentApp = tasksInfo[0].baseActivity!!.packageName
@@ -215,7 +215,7 @@ object AppUtils {
                         packageManager.getActivityInfo(taskInfo.topActivity!!, 0)
                             .loadLabel(packageManager).toString(),
                         taskInfo.topActivity!!.packageName,
-                        packageManager.getActivityIcon(taskInfo.topActivity!!)
+                        getAppIcon(context, taskInfo.topActivity!!.packageName)
                     )
                 )
             } catch (_: PackageManager.NameNotFoundException) {
@@ -245,7 +245,7 @@ object AppUtils {
                             -1,
                             getPackageLabel(context, app),
                             app,
-                            context.packageManager.getApplicationIcon(app)
+                            getAppIcon(context, app)
                         )
                     )
                 }
@@ -283,6 +283,46 @@ object AppUtils {
     }
 
     fun getAppIcon(context: Context, app: String): Drawable {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val customIconUri = prefs.getString("custom_icon_$app", null)
+        if (customIconUri != null) {
+            try {
+                val uri = android.net.Uri.parse(customIconUri)
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val drawable = Drawable.createFromStream(inputStream, uri.toString())
+                if (drawable != null) return drawable
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Built-in pack logic (simple label match)
+        val packType = prefs.getString("macos_icon_pack", "none")
+        if (packType != "none") {
+             try {
+                 val pm = context.packageManager
+                 val appInfo = pm.getApplicationInfo(app, 0)
+                 val label = pm.getApplicationLabel(appInfo).toString()
+                 // Simple mapping attempt: Label + "@4x_256.png" or similar
+                 // The files in assets are like "FaceTime@4x 1_256.png"
+                 // We'll try to find a file starting with Label
+                 val folder = when(packType) {
+                     "dark" -> "icons/dark"
+                     "clear" -> "icons/clear"
+                     else -> "icons/default"
+                 }
+                 val assets = context.assets.list(folder)
+                 val match = assets?.find { it.startsWith(label, ignoreCase = true) }
+                 if (match != null) {
+                     val stream = context.assets.open("$folder/$match")
+                     val drawable = Drawable.createFromStream(stream, match)
+                     if (drawable != null) return drawable
+                 }
+             } catch (e: Exception) {
+                 // Ignore
+             }
+        }
+
         return try {
             context.packageManager.getApplicationIcon(app)
         } catch (_: PackageManager.NameNotFoundException) {

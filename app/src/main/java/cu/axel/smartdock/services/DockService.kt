@@ -40,6 +40,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -96,6 +97,7 @@ import cu.axel.smartdock.utils.DeviceUtils
 import cu.axel.smartdock.utils.IconPackUtils
 import cu.axel.smartdock.utils.OnSwipeListener
 import cu.axel.smartdock.utils.Utils
+import cu.axel.smartdock.utils.ZoomTouchListener
 import cu.axel.smartdock.widgets.HoverInterceptorLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -137,6 +139,10 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     private lateinit var searchLayout: LinearLayout
     private var powerMenu: LinearLayout? = null
     private var audioPanel: LinearLayout? = null
+    private var statusBar: LinearLayout? = null
+    private lateinit var statusBarParams: WindowManager.LayoutParams
+    private lateinit var statusBarBatteryReceiver: BroadcastReceiver
+    private lateinit var statusBarWifiReceiver: BroadcastReceiver
     private lateinit var searchEntry: LinearLayout
     private lateinit var dockLayout: RelativeLayout
     private lateinit var windowManager: WindowManager
@@ -313,6 +319,26 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         else
             Toast.makeText(context, R.string.start_message, Toast.LENGTH_LONG).show()
 
+        // Status Bar updates
+        statusBarBatteryReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                updateStatusBar()
+            }
+        }
+        ContextCompat.registerReceiver(
+            this, statusBarBatteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        // Listen for wifi changes
+        statusBarWifiReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                updateStatusBar()
+            }
+        }
+        ContextCompat.registerReceiver(
+            this, statusBarWifiReceiver, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun getAppActions(app: App): ArrayList<Action> {
@@ -942,6 +968,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         searchEt.showSoftInputOnFocus = softwareKeyboard || tabletMode
         searchEt.requestFocus()
 
+        statusBar?.visibility = View.GONE
+        dock?.visibility = View.GONE
         appMenuVisible = true
     }
 
@@ -953,6 +981,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             adapter.filter("")
         }
         windowManager.removeView(appMenu)
+        statusBar?.visibility = View.VISIBLE
+        dock?.visibility = View.VISIBLE
         appMenuVisible = false
     }
 
@@ -1158,9 +1188,12 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     private fun showDockAppContextMenu(app: App, anchor: View) {
         val view = LayoutInflater.from(context).inflate(R.layout.pin_entry, null)
         val pinLayout = view.findViewById<LinearLayout>(R.id.pin_entry_pin)
+        val changeIconLayout = view.findViewById<LinearLayout>(R.id.pin_entry_icon)
+        val changeIconIv = view.findViewById<ImageView>(R.id.pin_entry_icon_iv)
         val layoutParams = Utils.makeWindowParams(-2, -2, context, preferSecondaryDisplay)
         view.setBackgroundResource(R.drawable.round_rect)
         ColorUtils.applyMainColor(context, sharedPreferences, view)
+        ColorUtils.applySecondaryColor(context, sharedPreferences, changeIconIv)
         layoutParams.gravity = Gravity.BOTTOM or Gravity.START
         layoutParams.flags =
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
@@ -1210,6 +1243,13 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                 updateRunningTasks()
             windowManager.removeView(view)
         }
+        changeIconLayout.setOnClickListener {
+            val intent = Intent(context, cu.axel.smartdock.activities.IconPickerActivity::class.java)
+            intent.putExtra("package", app.packageName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            windowManager.removeView(view)
+        }
         windowManager.addView(view, layoutParams)
     }
 
@@ -1222,7 +1262,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             applyTheme()
         else if (preference == "menu_icon_uri")
             updateMenuIcon()
-        else if (preference.startsWith("icon_")) {
+        else if (preference.startsWith("icon_") || preference.startsWith("custom_icon_")) {
             val iconPack = sharedPreferences.getString("icon_pack", "")!!
             iconPackUtils = if (iconPack.isNotEmpty()) {
                 IconPackUtils(this)
@@ -1272,6 +1312,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             preferSecondaryDisplay = sharedPreferences.getBoolean("prefer_last_display", false)
             if (DeviceUtils.getDisplays(this).size > 1)
                 restartUI()
+        } else if (preference == "show_status_bar" || preference == "enable_dock_zoom") {
+            restartUI()
         }
     }
 
@@ -1337,7 +1379,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         val nApps =
             if (orientation == Configuration.ORIENTATION_PORTRAIT) maxApps else maxAppsLandscape
         if (systemApp) {
-            tasks = AppUtils.getRunningTasks(activityManager, packageManager, nApps)
+            tasks = AppUtils.getRunningTasks(context, activityManager, packageManager, nApps)
             for (j in 1..tasks.size) {
                 val task = tasks[tasks.size - j]
                 val index = AppUtils.containsTask(apps, task)
@@ -1362,6 +1404,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         else
             tasksGv.adapter = DockAppAdapter(context, apps, this, iconPackUtils)
         //TODO: Move context outta here
+        updateStatusBar()
         wifiBtn.setImageResource(if (wifiManager.isWifiEnabled) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
         val bluetoothAdapter = bluetoothManager.adapter
         if (bluetoothAdapter != null)
@@ -1747,6 +1790,10 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             unregisterReceiver(soundEventsReceiver)
         if (::displayListener.isInitialized && ::displayManager.isInitialized)
             displayManager.unregisterDisplayListener(displayListener)
+        if (::statusBarBatteryReceiver.isInitialized)
+            unregisterReceiver(statusBarBatteryReceiver)
+        if (::statusBarWifiReceiver.isInitialized)
+            unregisterReceiver(statusBarWifiReceiver)
         removeAllViews()
         super.onDestroy()
     }
@@ -1769,10 +1816,45 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         orientationValue =
             if (orientation == Configuration.ORIENTATION_PORTRAIT) "" else "_landscape"
 
+        createStatusBar()
         createDock()
         createHotCorners()
         createAppMenu()
         applyTheme()
+    }
+
+    private fun createStatusBar() {
+        if (!sharedPreferences.getBoolean("show_status_bar", true)) return
+
+        try {
+            statusBar = LayoutInflater.from(context).inflate(R.layout.status_bar, null) as LinearLayout
+            statusBarParams = Utils.makeWindowParams(-1, Utils.dpToPx(context, 24), context, preferSecondaryDisplay)
+            statusBarParams.gravity = Gravity.TOP
+            statusBarParams.flags = (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                    or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+            windowManager.addView(statusBar, statusBarParams)
+            updateStatusBar()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun updateStatusBar() {
+        if (statusBar == null) return
+        val sbBatteryText = statusBar!!.findViewById<TextView>(R.id.sb_battery_text)
+        val sbBatteryIcon = statusBar!!.findViewById<ImageView>(R.id.sb_battery_icon)
+        val sbWifi = statusBar!!.findViewById<ImageView>(R.id.sb_wifi)
+
+        val batteryManager = getSystemService(BATTERY_SERVICE) as android.os.BatteryManager
+        val level = batteryManager.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        sbBatteryText.text = "$level%"
+        sbBatteryIcon.setImageResource(Utils.getBatteryDrawable(level, batteryManager.isCharging))
+
+        sbWifi.setImageResource(if (wifiManager.isWifiEnabled) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
     }
 
     private fun createDock() {
@@ -1788,6 +1870,18 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         tasksGv = dock!!.findViewById(R.id.apps_lv)
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         tasksGv.layoutManager = layoutManager
+        if (sharedPreferences.getBoolean("enable_dock_zoom", true)) {
+            tasksGv.setOnTouchListener(ZoomTouchListener(tasksGv))
+            // Ensure child views clip is false so zoom exceeds bounds
+            tasksGv.clipChildren = false
+            tasksGv.clipToPadding = false
+            val dockBg = dock!!.findViewById<View>(R.id.dock_layout)
+            if (dockBg is ViewGroup) {
+                dockBg.clipChildren = false
+                dockBg.clipToPadding = false
+            }
+            dock!!.clipChildren = false
+        }
         backBtn = dock!!.findViewById(R.id.back_btn)
         homeBtn = dock!!.findViewById(R.id.home_btn)
         recentBtn = dock!!.findViewById(R.id.recents_btn)
@@ -2070,6 +2164,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             appMenu?.let { windowManager.removeViewImmediate(it) }
             topRightCorner?.let { windowManager.removeViewImmediate(it) }
             bottomRightCorner?.let { windowManager.removeViewImmediate(it) }
+            statusBar?.let { windowManager.removeViewImmediate(it) }
         } catch (_: Exception) {
         }
 
@@ -2078,6 +2173,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         appMenu = null
         topRightCorner = null
         bottomRightCorner = null
+        statusBar = null
     }
 
     inner class HotCornersHoverListener(val key: String) : View.OnHoverListener {

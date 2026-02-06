@@ -94,6 +94,10 @@
     <string name="dock">Dock</string>
     <string name="navigation">Navigation</string>
     <string name="enable_apps_btn">Apps menu</string>
+    <string name="macos_category">MacOS Features</string>
+    <string name="show_status_bar_title">Show Status Bar</string>
+    <string name="enable_dock_zoom_title">Enable Dock Zoom</string>
+    <string name="macos_icon_pack_title">MacOS Built-in Icon Pack</string>
     <string name="enable_nav_back_title">Back</string>
     <string name="enable_nav_home_title">Home</string>
     <string name="enable_nav_recents_title">Recents</string>
