@@ -1,4 +1,63 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="@string/macos_category">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="show_status_bar"
+            android:title="@string/show_status_bar_title" />
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_dock_zoom"
+            android:title="@string/enable_dock_zoom_title" />
+        <SeekBarPreference
+            android:defaultValue="48"
+            android:key="dock_icon_size"
+            android:max="100"
+            android:min="24"
+            android:title="Dock Icon Size (dp)"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="48"
+            android:key="launcher_icon_size"
+            android:max="100"
+            android:min="24"
+            android:title="Launcher Icon Size (dp)"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="24"
+            android:key="dock_corner_radius"
+            android:max="50"
+            android:min="0"
+            android:title="Dock Corner Radius (dp)"
+            app:showSeekBarValue="true" />
+        <cu.axel.smartdock.preferences.SliderPreference
+            android:defaultValue="255"
+            android:key="dock_background_alpha"
+            android:max="255"
+            android:title="@string/dock_background_alpha_title" />
+        <ListPreference
+            android:defaultValue="none"
+            android:entries="@array/macos_icon_pack_entries"
+            android:entryValues="@array/macos_icon_pack_values"
+            android:key="macos_icon_pack"
+            android:title="@string/macos_icon_pack_title" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Status Bar Customization">
+        <SeekBarPreference
+            android:defaultValue="24"
+            android:key="status_bar_thickness"
+            android:max="60"
+            android:min="10"
+            android:title="Status Bar Thickness (dp)"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="100"
+            android:key="status_bar_zoom"
+            android:max="150"
+            android:min="50"
+            android:title="Status Bar Scale (%)"
+            app:showSeekBarValue="true" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/navigation">
         <SwitchPreferenceCompat
             android:defaultValue="true"
