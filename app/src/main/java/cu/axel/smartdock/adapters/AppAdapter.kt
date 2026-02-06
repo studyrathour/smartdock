@@ -80,7 +80,9 @@ class AppAdapter(
             viewHolder.nameTv.text = name
         }
 
-        if (iconPackUtils != null)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val customIcon = sharedPreferences.getString("custom_icon_${app.packageName}", null)
+        if (customIcon == null && iconPackUtils != null)
             viewHolder.iconIv.setImageDrawable(iconPackUtils.getAppThemedIcon(app.packageName))
         else
             viewHolder.iconIv.setImageDrawable(app.icon)

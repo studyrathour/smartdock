@@ -9,6 +9,7 @@
         android:title="@string/help" >
     </Preference>
     <Preference
+        android:key="join_telegram"
         android:title="@string/message_developer_title"
         android:summary="@string/message_developer_summary">
         <intent android:action="android.intent.action.VIEW"

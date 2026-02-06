@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/round_rect"
+    android:padding="16dp"
+    android:elevation="10dp">
+
+    <!-- Connectivity Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <!-- WiFi -->
+        <LinearLayout
+            android:id="@+id/cc_wifi_layout"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="@drawable/round_rect"
+            android:backgroundTint="#33FFFFFF">
+            <ImageView
+                android:id="@+id/cc_wifi_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_wifi_on"
+                android:tint="@android:color/white"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wi-Fi"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <View android:layout_width="12dp" android:layout_height="1dp"/>
+
+        <!-- Bluetooth -->
+        <LinearLayout
+            android:id="@+id/cc_bluetooth_layout"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="@drawable/round_rect"
+            android:backgroundTint="#33FFFFFF">
+            <ImageView
+                android:id="@+id/cc_bluetooth_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_bluetooth"
+                android:tint="@android:color/white"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bluetooth"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Display Brightness -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@drawable/round_rect"
+        android:backgroundTint="#33FFFFFF"
+        android:layout_marginBottom="12dp">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_screen"
+            android:tint="@android:color/white"/>
+        <SeekBar
+            android:id="@+id/cc_brightness_seekbar"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:max="255"/>
+    </LinearLayout>
+
+    <!-- Volume -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@drawable/round_rect"
+        android:backgroundTint="#33FFFFFF"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_volume"
+            android:tint="@android:color/white"/>
+        <SeekBar
+            android:id="@+id/cc_volume_seekbar"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <!-- Bottom Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/cc_settings_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_settings"
+            android:padding="10dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="#40FFFFFF"
+            android:layout_marginEnd="16dp"
+            android:tint="@android:color/white"/>
+
+        <ImageView
+            android:id="@+id/cc_lock_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_lock"
+            android:padding="10dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="#40FFFFFF"
+            android:tint="@android:color/white"/>
+
+    </LinearLayout>
+
+</LinearLayout>

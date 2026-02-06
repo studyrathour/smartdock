@@ -138,6 +138,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     private var appMenu: LinearLayout? = null
     private lateinit var searchLayout: LinearLayout
     private var powerMenu: LinearLayout? = null
+    private var controlCenter: View? = null
     private var audioPanel: LinearLayout? = null
     private var statusBar: LinearLayout? = null
     private lateinit var statusBarParams: WindowManager.LayoutParams
@@ -149,6 +150,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
     private lateinit var appsSeparator: View
     private var appMenuVisible = false
     private var powerMenuVisible = false
+    private var controlCenterVisible = false
     private var isPinned = false
     private var audioPanelVisible = false
     private var systemApp = false
@@ -709,9 +711,15 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         dock!!.visibility = View.VISIBLE
         dockHandle!!.visibility = View.GONE
 
-        if (dockLayoutParams.height != dockHeight) {
-            dockLayoutParams.height = dockHeight
+        val zoomHeadroom = if (sharedPreferences.getBoolean("enable_dock_zoom", true)) Utils.dpToPx(context, 40) else 0
+        if (dockLayoutParams.height != dockHeight + zoomHeadroom) {
+            dockLayoutParams.height = dockHeight + zoomHeadroom
             windowManager.updateViewLayout(dock, dockLayoutParams)
+        }
+
+        if (dockLayout.layoutParams.height != dockHeight) {
+            dockLayout.layoutParams.height = dockHeight
+            dockLayout.requestLayout()
         }
 
         dockHandler.removeCallbacksAndMessages(null)
@@ -1348,8 +1356,12 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         dockHeight =
             Utils.dpToPx(context, sharedPreferences.getString("dock_height", "56")!!.toInt())
         if (isPinned) {
-            dockLayoutParams.height = dockHeight
+            val zoomHeadroom = if (sharedPreferences.getBoolean("enable_dock_zoom", true)) Utils.dpToPx(context, 40) else 0
+            dockLayoutParams.height = dockHeight + zoomHeadroom
             windowManager.updateViewLayout(dock, dockLayoutParams)
+
+            dockLayout.layoutParams.height = dockHeight
+            dockLayout.requestLayout()
         }
     }
 
@@ -1651,6 +1663,119 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         powerMenu = null
     }
 
+    private fun hideControlCenter() {
+        if (controlCenter != null) {
+            windowManager.removeView(controlCenter)
+            controlCenter = null
+        }
+        controlCenterVisible = false
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun showControlCenter() {
+        if (Utils.notificationPanelVisible) toggleNotificationPanel(false)
+        if (powerMenuVisible) hidePowerMenu()
+        if (appMenuVisible) hideAppMenu()
+        if (controlCenterVisible) {
+            hideControlCenter()
+            return
+        }
+
+        val layoutParams = Utils.makeWindowParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            context,
+            preferSecondaryDisplay
+        )
+        layoutParams.gravity = Gravity.TOP or Gravity.END
+        layoutParams.x = Utils.dpToPx(context, 8)
+        layoutParams.y = Utils.dpToPx(context, 32) // Below status bar
+        layoutParams.flags = (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH)
+
+        controlCenter = LayoutInflater.from(ContextThemeWrapper(context, R.style.AppTheme_Dock))
+            .inflate(R.layout.window_control_center, null)
+
+        ColorUtils.applyMainColor(context, sharedPreferences, controlCenter!!)
+
+        controlCenter!!.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_OUTSIDE) {
+                hideControlCenter()
+            }
+            true // Consume touch to prevent click-through
+        }
+
+        // Initialize Views
+        val wifiLayout = controlCenter!!.findViewById<View>(R.id.cc_wifi_layout)
+        val btLayout = controlCenter!!.findViewById<View>(R.id.cc_bluetooth_layout)
+        val brightnessSb = controlCenter!!.findViewById<SeekBar>(R.id.cc_brightness_seekbar)
+        val volumeSb = controlCenter!!.findViewById<SeekBar>(R.id.cc_volume_seekbar)
+        val settingsIcon = controlCenter!!.findViewById<ImageView>(R.id.cc_settings_icon)
+        val lockIcon = controlCenter!!.findViewById<ImageView>(R.id.cc_lock_icon)
+        val wifiIcon = controlCenter!!.findViewById<ImageView>(R.id.cc_wifi_icon)
+        val btIcon = controlCenter!!.findViewById<ImageView>(R.id.cc_bluetooth_icon)
+
+        // Wifi Logic
+        wifiIcon.setImageResource(if (wifiManager.isWifiEnabled) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+        wifiLayout.setOnClickListener {
+            toggleWifi()
+            // Update icon after delay or observe broadcast
+            Handler(Looper.getMainLooper()).postDelayed({
+                wifiIcon.setImageResource(if (wifiManager.isWifiEnabled) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+            }, 500)
+        }
+
+        // BT Logic
+        val bluetoothAdapter = bluetoothManager.adapter
+        if (bluetoothAdapter != null) {
+            btIcon.setImageResource(if (bluetoothAdapter.isEnabled) R.drawable.ic_bluetooth else R.drawable.ic_bluetooth_off)
+        }
+        btLayout.setOnClickListener {
+            openBluetoothSettings() // Or toggle if possible
+        }
+
+        // Volume Logic
+        val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        volumeSb.max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        volumeSb.progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        volumeSb.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+            }
+            override fun onStartTrackingTouch(p1: SeekBar) {}
+            override fun onStopTrackingTouch(p1: SeekBar) {}
+        })
+
+        // Brightness Logic
+        try {
+            val brightness = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+            brightnessSb.progress = brightness
+        } catch(e: Exception) {}
+
+        brightnessSb.setOnSeekBarChangeListener(object: OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (Settings.System.canWrite(context)) {
+                    Settings.System.putInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS, progress)
+                }
+            }
+            override fun onStartTrackingTouch(p1: SeekBar) {}
+            override fun onStopTrackingTouch(p1: SeekBar) {}
+        })
+
+        settingsIcon.setOnClickListener {
+            launchApp(null, null, Intent(Settings.ACTION_SETTINGS))
+            hideControlCenter()
+        }
+
+        lockIcon.setOnClickListener {
+            lockScreen()
+            hideControlCenter()
+        }
+
+        windowManager.addView(controlCenter, layoutParams)
+        controlCenterVisible = true
+    }
+
     fun applyTheme() {
         updateDockBackgroundColor()
         ColorUtils.applyMainColor(context, sharedPreferences, appMenu!!)
@@ -1847,6 +1972,20 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                     or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
+            val sbGestureDetector = GestureDetector(context, object : OnSwipeListener() {
+                override fun onSwipe(direction: Direction): Boolean {
+                    if (direction == Direction.DOWN) {
+                        performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+                        return true
+                    }
+                    return false
+                }
+            })
+            statusBar!!.setOnTouchListener { _, event ->
+                sbGestureDetector.onTouchEvent(event)
+                false
+            }
+
             windowManager.addView(statusBar, statusBarParams)
             setupStatusBarListeners()
             updateStatusBar()
@@ -1889,7 +2028,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         }
 
         controlCenter.setOnClickListener {
-            performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+            if (controlCenterVisible) hideControlCenter() else showControlCenter()
         }
 
         clock.setOnClickListener {
@@ -2064,7 +2203,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
 
         dockHeight =
             Utils.dpToPx(context, sharedPreferences.getString("dock_height", "56")!!.toInt())
-        dockLayoutParams = Utils.makeWindowParams(-2, dockHeight, context, preferSecondaryDisplay)
+        val zoomHeadroom = if (sharedPreferences.getBoolean("enable_dock_zoom", true)) Utils.dpToPx(context, 40) else 0
+        dockLayoutParams = Utils.makeWindowParams(-2, dockHeight + zoomHeadroom, context, preferSecondaryDisplay)
         dockLayoutParams.screenOrientation =
             if (sharedPreferences.getBoolean("lock_landscape", false))
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -2079,6 +2219,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         loadPinnedApps()
         placeRunningApps()
 
+        dockLayout.layoutParams.height = dockHeight
         dockLayoutParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
         dockLayoutParams.y = Utils.dpToPx(context, 15)
         windowManager.addView(dock, dockLayoutParams)
@@ -2193,6 +2334,16 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
 
         updateAppMenu()
 
+        val menuGestureDetector = GestureDetector(context, object : OnSwipeListener() {
+            override fun onSwipe(direction: Direction): Boolean {
+                if (direction == Direction.DOWN || direction == Direction.LEFT || direction == Direction.RIGHT) {
+                    hideAppMenu()
+                    return true
+                }
+                return false
+            }
+        })
+
         //TODO: Filter app button menu click only
         appMenu!!.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_OUTSIDE
@@ -2200,6 +2351,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             ) {
                 hideAppMenu()
             }
+            menuGestureDetector.onTouchEvent(event)
             false
         }
     }
@@ -2231,6 +2383,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             topRightCorner?.let { windowManager.removeViewImmediate(it) }
             bottomRightCorner?.let { windowManager.removeViewImmediate(it) }
             statusBar?.let { windowManager.removeViewImmediate(it) }
+            controlCenter?.let { windowManager.removeViewImmediate(it) }
         } catch (_: Exception) {
         }
 
@@ -2240,6 +2393,7 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
         topRightCorner = null
         bottomRightCorner = null
         statusBar = null
+        controlCenter = null
     }
 
     inner class HotCornersHoverListener(val key: String) : View.OnHoverListener {
