@@ -65,9 +65,14 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (::permissionsDialog.isInitialized && permissionsDialog.isShowing) {
             updatePermissionsStatus()
+        } else {
+            // Check if all essential permissions are granted
+            if (DeviceUtils.canDrawOverOtherApps(this) && DeviceUtils.isAccessibilityServiceEnabled(this)) {
+                 startActivity(Intent(this, MacOSSettingsActivity::class.java))
+                 finish()
+            }
         }
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return super.onCreateOptionsMenu(menu)

@@ -8,7 +8,7 @@
         <SwitchPreferenceCompat
             android:key="app_menu_fullscreen"
             android:title="@string/app_menu_fullscreen_title"
-            android:defaultValue="false" />
+            android:defaultValue="true" />
         <EditTextPreference
             android:key="app_menu_height"
             android:hint="540"
@@ -26,7 +26,7 @@
         <EditTextPreference
             android:key="num_columns"
             android:hint="5"
-            android:defaultValue="5"
+            android:defaultValue="7"
             android:title="@string/num_columns_title"/>
 			
     </PreferenceCategory>

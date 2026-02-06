@@ -252,8 +252,6 @@
     <string name="help_and_about">Hilfe und Informationen</string>
     <string name="a_launcher_for_android_x86_by_">Ein Launcher für Android x86 von Axel358</string>
     <string name="help">Hilfe</string>
-    <string name="smart_dock_its_free_and_open_">Smart Dock ist kostenlos und quelloffen. Beitragen auf GitHub</string>
-    <string name="github">GitHub</string>
     <string name="show_help_summary">Hilfe anfordern</string>
     <string name="app_help">    Die Anwendung sollte als Systemanwendung installiert werden, um die richtigen Berechtigungen zu erhalten.
     Ohne diese wird die Funktionalität eingeschränkt sein.
@@ -267,8 +265,6 @@
     <string name="contributors">Contributors</string>
     <string name="tap_to_see_the_list_of_great_p">Tippen Sie, um die Liste der großartigen Menschen zu sehen, die zu Smart Dock beigetragen haben</string>
     <string name="accessibility_service_description">Ermöglicht die Durchführung von Aktionen wie Zurück</string>
-    <string name="join_telegram_title">Telegram Gruppe</string>
-    <string name="join_telegram_summary">Haben Sie noch Fragen? Treten Sie der Telegram-Supportgruppe bei</string>
     <string name="gnu_general_public_licence_v3">GNU General Public Licence v3.0</string>
     <string name="license">Lizenz</string>
     <string name="donate">Spende</string>

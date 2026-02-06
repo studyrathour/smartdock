@@ -252,8 +252,6 @@
     <string name="help_and_about">ਮਦਦ ਅਤੇ ਇਸ ਬਾਰੇ</string>
     <string name="a_launcher_for_android_x86_by_">Axel358 ਦੁਆਰਾ Android x86 ਲਈ ਇੱਕ ਲਾਂਚਰ</string>
     <string name="help">ਮਦਦ</string>
-    <string name="smart_dock_its_free_and_open_">ਸਮਾਰਟ ਡੌਕ ਇਹ ਮੁਫਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਹੈ। GitHub \'ਤੇ ਯੋਗਦਾਨ ਪਾਓ</string>
-    <string name="github">GitHub</string>
     <string name="show_help_summary">ਮਦਦ ਲਈ ਟੈਪ ਕਰੋ</string>
     <string name="app_help">ਸਹੀ ਅਨੁਮਤੀਆਂ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ ਸਿਸਟਮ ਐਪ ਦੇ ਤੌਰ \'ਤੇ ਸਥਾਪਿਤ ਕੀਤਾ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ।
     ਇਸ ਤੋਂ ਬਿਨਾਂ ਕਾਰਜਕੁਸ਼ਲਤਾ ਸੀਮਤ ਹੋ ਜਾਵੇਗੀ।
@@ -267,8 +265,6 @@
     <string name="contributors">ਯੋਗਦਾਨ ਪਾਉਣ ਵਾਲੇ</string>
     <string name="tap_to_see_the_list_of_great_p">ਸਮਾਰਟ ਡੌਕ ਵਿੱਚ ਯੋਗਦਾਨ ਪਾਉਣ ਵਾਲੇ ਮਹਾਨ ਲੋਕਾਂ ਦੀ ਸੂਚੀ ਦੇਖਣ ਲਈ ਟੈਪ ਕਰੋ</string>
     <string name="accessibility_service_description">ਬੈਕ ਵਰਗੀਆਂ ਕਾਰਵਾਈਆਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ</string>
-    <string name="join_telegram_title">ਟੈਲੀਗ੍ਰਾਮ ਸਮੂਹ</string>
-    <string name="join_telegram_summary">ਕੋਈ ਸਵਾਲ ਹਨ? ਟੈਲੀਗ੍ਰਾਮ ਸਹਾਇਤਾ ਸਮੂਹ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ</string>
     <string name="gnu_general_public_licence_v3">GNU ਜਨਰਲ ਪਬਲਿਕ ਲਾਇਸੈਂਸ v3.0</string>
     <string name="license">ਲਾਇਸੰਸ</string>
     <string name="donate">Donate</string>

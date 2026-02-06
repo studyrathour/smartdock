@@ -8,10 +8,20 @@ import com.google.android.material.color.DynamicColors
 import cu.axel.smartdock.activities.DebugActivity
 import kotlin.system.exitProcess
 import android.os.Process
+import org.chickenhook.restrictionbypass.Unseal
 
 class App : Application() {
     private lateinit var uncaughtExceptionHandler: Thread.UncaughtExceptionHandler
     override fun onCreate() {
+        super.onCreate()
+
+        // Try to unseal hidden APIs if needed
+        try {
+            Unseal.unseal()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+
         DynamicColors.applyToActivitiesIfAvailable(this)
         uncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()!!
         Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
@@ -35,6 +45,5 @@ class App : Application() {
             exitProcess(2)
             uncaughtExceptionHandler.uncaughtException(thread, exception)
         }
-        super.onCreate()
     }
 }

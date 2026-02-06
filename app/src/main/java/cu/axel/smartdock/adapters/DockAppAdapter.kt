@@ -50,6 +50,8 @@ class DockAppAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.scaleX = 1f
+        viewHolder.itemView.scaleY = 1f
         val app = apps[position]
         val size = app.tasks.size
         if (size > 0) {
@@ -72,7 +74,11 @@ class DockAppAdapter(
             viewHolder.runningIndicator.alpha = 0f
             viewHolder.taskCounter.alpha = 0f
         }
-        if (iconPackUtils != null)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val customIcon = sharedPreferences.getString("custom_icon_${app.packageName}", null)
+        if (customIcon != null)
+            viewHolder.iconIv.setImageDrawable(app.icon)
+        else if (iconPackUtils != null)
             viewHolder.iconIv.setImageDrawable(iconPackUtils.getAppThemedIcon(app.packageName))
         else
             viewHolder.iconIv.setImageDrawable(app.icon)

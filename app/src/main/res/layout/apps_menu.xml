@@ -22,7 +22,8 @@
             android:id="@+id/avatar_iv"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_user" />
+            android:src="@drawable/ic_user"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/user_name_tv"
@@ -34,7 +35,8 @@
             android:singleLine="true"
             android:text="@string/user"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#FFFFFFFF" />
+            android:textColor="#FFFFFFFF"
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/search_entry"
@@ -57,7 +59,8 @@
                 android:imeOptions="actionGo"
                 android:inputType="text"
                 android:singleLine="true"
-                android:textSize="17sp" />
+                android:textSize="17sp"
+                android:gravity="center" />
         </LinearLayout>
 
         <ImageView
@@ -67,7 +70,8 @@
             android:layout_marginStart="10dp"
             android:background="@drawable/circle"
             android:padding="5dp"
-            android:src="@drawable/ic_power" />
+            android:src="@drawable/ic_power"
+            android:visibility="gone" />
 
     </LinearLayout>
 
@@ -75,7 +79,8 @@
         android:id="@+id/fav_applist_lv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginBottom="10dp"
+        android:visibility="gone" />
 
     <View
         android:id="@+id/apps_separator"
@@ -84,7 +89,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/running_indicator" />
+        android:background="@drawable/running_indicator"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/menu_applist_lv"
@@ -120,4 +126,3 @@
     </LinearLayout>
 
 </LinearLayout>
-
