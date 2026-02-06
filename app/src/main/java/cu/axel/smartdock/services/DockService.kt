@@ -871,12 +871,17 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             else
                 deviceHeight - dockHeight - DeviceUtils.getStatusBarHeight(context) - margins
         if (sharedPreferences.getBoolean("app_menu_fullscreen", false)) {
-            layoutParams =
-                Utils.makeWindowParams(-1, usableHeight + margins, context, preferSecondaryDisplay)
-            layoutParams.y = dockHeight
+            // Fullscreen mode: Cover entire screen including status bar and dock area
+            layoutParams = Utils.makeWindowParams(-1, -1, context, preferSecondaryDisplay)
+            layoutParams.y = 0 // Top of screen
+
+            // Adjust padding to avoid system status bar overlap if needed, or just let it overlay
+            val statusBarH = DeviceUtils.getStatusBarHeight(context)
+            appMenu!!.setPadding(0, statusBarH, 0, 0)
+
             if (sharedPreferences.getInt("dock_layout", -1) != 0) {
                 val padding = Utils.dpToPx(context, 24)
-                appMenu!!.setPadding(padding, padding, padding, padding)
+                appMenu!!.setPadding(padding, statusBarH + padding, padding, padding)
                 searchEntry.gravity = Gravity.CENTER
                 searchLayout.gravity = Gravity.CENTER
                 appsGv.layoutManager = GridLayoutManager(context, 10)
@@ -1837,9 +1842,56 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                     or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
             windowManager.addView(statusBar, statusBarParams)
+            setupStatusBarListeners()
             updateStatusBar()
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    private fun setupStatusBarListeners() {
+        if (statusBar == null) return
+        val appleIcon = statusBar!!.findViewById<ImageView>(R.id.sb_apple_icon)
+        val wifiIcon = statusBar!!.findViewById<ImageView>(R.id.sb_wifi)
+        val batteryIcon = statusBar!!.findViewById<ImageView>(R.id.sb_battery_icon)
+        val batteryText = statusBar!!.findViewById<TextView>(R.id.sb_battery_text)
+        val searchIcon = statusBar!!.findViewById<ImageView>(R.id.sb_search)
+        val controlCenter = statusBar!!.findViewById<ImageView>(R.id.sb_control_center)
+        val clock = statusBar!!.findViewById<TextClock>(R.id.sb_clock)
+
+        appleIcon.setOnClickListener {
+             if (sharedPreferences.getBoolean("enable_power_menu", false)) {
+                if (powerMenuVisible) hidePowerMenu() else showPowerMenu()
+            } else performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)
+        }
+
+        wifiIcon.setOnClickListener { toggleWifi() }
+        wifiIcon.setOnLongClickListener {
+             launchApp(null, null, Intent(Settings.ACTION_WIFI_SETTINGS))
+             true
+        }
+
+        val batteryAction = View.OnClickListener {
+             launchApp(null, null, Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS))
+        }
+        batteryIcon.setOnClickListener(batteryAction)
+        batteryText.setOnClickListener(batteryAction)
+
+        searchIcon.setOnClickListener {
+             // Mimic Spotlight or just open App Menu search
+             toggleAppMenu()
+        }
+
+        controlCenter.setOnClickListener {
+            performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+        }
+
+        clock.setOnClickListener {
+             launchApp(null, sharedPreferences.getString("app_clock", "com.android.deskclock")!!)
+        }
+        clock.setOnLongClickListener {
+            launchApp(null, null, Intent(Settings.ACTION_DATE_SETTINGS))
+            true
         }
     }
 
@@ -1864,6 +1916,11 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                 R.style.AppTheme_Dock
             )
         ).inflate(R.layout.dock, null) as HoverInterceptorLayout
+
+        // Ensure global clip disabled
+        dock!!.clipChildren = false
+        dock!!.clipToPadding = false
+
         dockLayout = dock!!.findViewById(R.id.dock_layout)
         dockHandle = LayoutInflater.from(context).inflate(R.layout.dock_handle, null) as Button
         appsBtn = dock!!.findViewById(R.id.apps_btn)
@@ -1875,12 +1932,13 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
             // Ensure child views clip is false so zoom exceeds bounds
             tasksGv.clipChildren = false
             tasksGv.clipToPadding = false
-            val dockBg = dock!!.findViewById<View>(R.id.dock_layout)
-            if (dockBg is ViewGroup) {
-                dockBg.clipChildren = false
-                dockBg.clipToPadding = false
+            if (dockLayout is ViewGroup) {
+                dockLayout.clipChildren = false
+                dockLayout.clipToPadding = false
             }
-            dock!!.clipChildren = false
+            val dockContent = dock!!.findViewById<ViewGroup>(R.id.dock_content)
+            dockContent.clipChildren = false
+            dockContent.clipToPadding = false
         }
         backBtn = dock!!.findViewById(R.id.back_btn)
         homeBtn = dock!!.findViewById(R.id.home_btn)
@@ -1909,6 +1967,8 @@ class DockService : AccessibilityService(), OnSharedPreferenceChangeListener, On
                     if (appMenuVisible) hideAppMenu() else unpinDock()
                 } else if (direction == Direction.LEFT) {
                     performGlobalAction(GLOBAL_ACTION_BACK)
+                } else if (direction == Direction.RIGHT) {
+                    performGlobalAction(GLOBAL_ACTION_HOME)
                 }
                 return true
             }

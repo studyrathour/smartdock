@@ -21,6 +21,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:layout_centerInParent="true">
 
             <LinearLayout
@@ -28,6 +30,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -79,6 +83,8 @@
                 android:id="@+id/apps_lv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:fadingEdgeLength="6dp"
                 android:requiresFadingEdge="horizontal" />
 

@@ -312,7 +312,17 @@ object AppUtils {
                      else -> "icons/default"
                  }
                  val assets = context.assets.list(folder)
-                 val match = assets?.find { it.startsWith(label, ignoreCase = true) }
+                 // Try exact match first, then startsWith, then contains
+                 var match = assets?.find { it.equals("$label.png", ignoreCase = true) }
+                 if (match == null) {
+                     match = assets?.find { it.startsWith(label, ignoreCase = true) }
+                 }
+                 if (match == null) {
+                     // Try without spaces or specific keywords if needed, but let's stick to label for now
+                     // Maybe the file has @4x or similar suffix
+                     match = assets?.find { it.contains(label, ignoreCase = true) }
+                 }
+
                  if (match != null) {
                      val stream = context.assets.open("$folder/$match")
                      val drawable = Drawable.createFromStream(stream, match)

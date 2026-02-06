@@ -36,6 +36,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.MacOSSettingsActivity" android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.LauncherActivity"
             android:excludeFromRecents="true"

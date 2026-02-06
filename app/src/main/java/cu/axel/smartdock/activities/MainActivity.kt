@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             showPermissionsDialog()
         if (sharedPreferences.getInt("dock_layout", -1) == -1)
             DockLayoutDialog(this)
+
+        // Redirect to MacOS Settings immediately
+        startActivity(Intent(this, MacOSSettingsActivity::class.java))
+        finish()
     }
 
     override fun onResume() {
