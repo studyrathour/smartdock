@@ -59,9 +59,9 @@ class MacOSSettingsActivity : AppCompatActivity() {
             .setCancelable(false)
             .setPositiveButton("Contact Owner") { _, _ ->
                 try {
-                    startActivity(Intent(Intent.ACTION_VIEW, "tg://resolve?domain=smartdock358".toUri()))
+                    startActivity(Intent(Intent.ACTION_VIEW, "tg://resolve?domain=SURAJ_EduMaster".toUri()))
                 } catch (e: ActivityNotFoundException) {
-                    startActivity(Intent(Intent.ACTION_VIEW, "https://t.me/smartdock358".toUri()))
+                    startActivity(Intent(Intent.ACTION_VIEW, "https://t.me/SURAJ_EduMaster".toUri()))
                 }
             }
             .setNegativeButton("Close", null)

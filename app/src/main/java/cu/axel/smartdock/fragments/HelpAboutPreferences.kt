@@ -14,7 +14,7 @@ class HelpAboutPreferences : PreferenceFragmentCompat() {
         setPreferencesFromResource(R.xml.preferences_help_about, arg1)
         findPreference<Preference>("join_telegram")?.setOnPreferenceClickListener {
             try {
-                startActivity(Intent(Intent.ACTION_VIEW).setData("tg://resolve?domain=smartdock358".toUri()))
+                startActivity(Intent(Intent.ACTION_VIEW).setData("tg://resolve?domain=SURAJ_EduMaster".toUri()))
             } catch (_: ActivityNotFoundException) {
             }
             false

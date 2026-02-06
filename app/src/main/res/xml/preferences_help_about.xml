@@ -15,19 +15,4 @@
         <intent android:action="android.intent.action.VIEW"
             android:data="https://t.me/SURAJ_EduMaster" />
     </Preference>
-    <Preference
-		android:summary="@string/support_the_project"
-		android:title="@string/donate" >
-		<intent android:action="android.intent.action.VIEW"
-			android:data="https://github.com/axel358/smartdock/blob/main/README.md#support-the-project"/>
-	</Preference>
-	<Preference
-		android:title="@string/contributors"
-		android:summary="@string/tap_to_see_the_list_of_great_p" >
-		<intent android:action="android.intent.action.VIEW"
-			android:data="https://github.com/axel358/smartdock/blob/main/Contributors.md"/>
-	</Preference>
-	<Preference
-		android:summary="@string/gnu_general_public_licence_v3"
-		android:title="@string/license" />
 </PreferenceScreen>
