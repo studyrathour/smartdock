@@ -2,10 +2,10 @@
     <PreferenceCategory android:title="Dock elements">
      <PreferenceScreen
          android:title="Dock elements(portrait)"
-         android:fragment="cu.axel.smartdock.fragments.DockElementsPreferences"/>
+         android:fragment="suraj.veera.launcher.fragments.DockElementsPreferences"/>
         <PreferenceScreen
             android:title="Dock elements(landscape)"
-            android:fragment="cu.axel.smartdock.fragments.DockElementsLandscapePreferences"/>
+            android:fragment="suraj.veera.launcher.fragments.DockElementsLandscapePreferences"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/behaviour">
         <ListPreference
@@ -16,7 +16,7 @@
             android:summary="@string/activation_method_summary"
             android:title="@string/activation_method" />
 
-        <cu.axel.smartdock.preferences.SliderPreference
+        <suraj.veera.launcher.preferences.SliderPreference
             android:defaultValue="0.5"
             android:inputType="number"
             android:key="handle_opacity"
@@ -29,7 +29,7 @@
             android:key="handle_position"
             android:title="@string/handle_position" />
 
-        <cu.axel.smartdock.preferences.SliderPreference
+        <suraj.veera.launcher.preferences.SliderPreference
             android:defaultValue="10"
             android:key="dock_activation_area"
             android:summary="@string/dock_activation_area_summary"

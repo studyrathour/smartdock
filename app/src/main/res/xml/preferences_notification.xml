@@ -23,7 +23,7 @@
             android:key="silence_current"
             android:title="@string/silence_current_title" />
 
-        <cu.axel.smartdock.preferences.AppChooserMultiplePreference
+        <suraj.veera.launcher.preferences.AppChooserMultiplePreference
             android:dependency="show_notifications"
             android:key="ignored_notifications_popups"
             android:title="@string/silenced_notifications_title" />
@@ -33,7 +33,7 @@
             android:defaultValue="true"
             android:key="enable_notif_panel"
             android:title="@string/enable_notif_panel_title" />
-        <cu.axel.smartdock.preferences.AppChooserMultiplePreference
+        <suraj.veera.launcher.preferences.AppChooserMultiplePreference
             android:key="ignored_notifications_panel"
             android:title="@string/hidden_notifications" />
     </PreferenceCategory>

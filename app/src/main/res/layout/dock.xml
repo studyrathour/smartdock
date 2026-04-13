@@ -1,4 +1,4 @@
-<cu.axel.smartdock.widgets.HoverInterceptorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<suraj.veera.launcher.widgets.HoverInterceptorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -112,7 +112,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_margin="6dp"
-                android:src="@drawable/ic_apps_menu" />
+                android:src="@drawable/ic_windows_start" />
 
             <ImageView
                 android:id="@+id/back_btn"
@@ -153,4 +153,4 @@
         </LinearLayout>
     </RelativeLayout>
 
-</cu.axel.smartdock.widgets.HoverInterceptorLayout>
+</suraj.veera.launcher.widgets.HoverInterceptorLayout>
