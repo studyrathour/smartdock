@@ -2,11 +2,11 @@
     <Preference
         android:icon="@drawable/ic_info"
         android:title="@string/hot_corners_help"/>
-    <cu.axel.smartdock.preferences.NavActionChooserPreference
+    <suraj.veera.launcher.preferences.NavActionChooserPreference
         android:defaultValue="false"
         android:key="enable_corner_top_right"
         android:title="@string/enable_corner_top_right_title" />
-    <cu.axel.smartdock.preferences.NavActionChooserPreference
+    <suraj.veera.launcher.preferences.NavActionChooserPreference
         android:defaultValue="false"
         android:key="enable_corner_bottom_right"
         android:title="@string/enable_corner_bottom_right_title" />

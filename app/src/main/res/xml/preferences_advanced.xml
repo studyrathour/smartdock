@@ -16,12 +16,12 @@
         android:summary="@string/custom_toasts_summary"
         android:title="@string/custom_toasts" />
 
-    <cu.axel.smartdock.preferences.SliderPreference
+    <suraj.veera.launcher.preferences.SliderPreference
         android:defaultValue="56"
         android:key="dock_height"
         android:title="@string/dock_height" />
 
-    <cu.axel.smartdock.preferences.IconPackPreference
+    <suraj.veera.launcher.preferences.IconPackPreference
         android:key="icon_pack"
         android:title="@string/icon_pack" />
 

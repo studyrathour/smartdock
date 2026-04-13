@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="@string/menu">
-        <cu.axel.smartdock.preferences.FileChooserPreference
+        <suraj.veera.launcher.preferences.FileChooserPreference
             android:key="menu_icon_uri"
             android:defaultValue="default"
             android:title="@string/menu_icon_uri_title"/>
@@ -64,7 +64,7 @@
 		android:key="user_name"
 		android:defaultValue=""
 		android:title="@string/user_name"/>
-	<cu.axel.smartdock.preferences.FileChooserPreference
+	<suraj.veera.launcher.preferences.FileChooserPreference
 		android:key="user_icon_uri"
 		android:defaultValue="default"
 		android:title="@string/user_avatar"/>
@@ -74,7 +74,7 @@
         <SwitchPreferenceCompat
             android:title="@string/allow_app_hiding"
             android:key="enable_app_hiding_grid"/>
-        <cu.axel.smartdock.preferences.AppChooserMultiplePreference
+        <suraj.veera.launcher.preferences.AppChooserMultiplePreference
             android:key="hidden_apps_grid"
             android:title="@string/hidden_apps"/>
     </PreferenceCategory>

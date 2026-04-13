@@ -31,7 +31,7 @@
     <string name="overlays_in_settings">允许在设置中覆盖</string>
     <string name="overlays_in_settings_desc">允许在设置应用打开时保持dock可见。这将允许<b>任何应用</b>在设置应用上层显示内容,而不仅仅是Dock。需要从开发者选项中启用</string>
     <string name="write_secure">写入安全设置</string>
-    <string name="write_secure_desc">使用高级设置所需。这是一个特殊权限,需要通过root或adb执行以下命令授予:\npm grant cu.axel.smartdock android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="write_secure_desc">使用高级设置所需。这是一个特殊权限,需要通过root或adb执行以下命令授予:\npm grant suraj.veera.launcher android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="manage">管理…</string>
     <string name="grant">授予</string>
     <string name="enable">启用</string>

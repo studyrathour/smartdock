@@ -1,0 +1,170 @@
+package suraj.veera.launcher.adapters
+
+import android.content.Context
+import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.StyleSpan
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
+import suraj.veera.launcher.R
+import suraj.veera.launcher.models.App
+import suraj.veera.launcher.utils.ColorUtils
+import suraj.veera.launcher.utils.IconPackUtils
+import suraj.veera.launcher.utils.Utils
+import java.util.Locale
+
+class AppAdapter(
+    private val context: Context,
+    private var apps: List<App>,
+    private val listener: OnAppClickListener,
+    private val large: Boolean,
+    private val iconPackUtils: IconPackUtils?
+) : RecyclerView.Adapter<AppAdapter.ViewHolder>() {
+    private val allApps: ArrayList<App> = ArrayList(apps)
+    private var iconBackground = 0
+    private val iconPadding: Int
+    private val singleLine: Boolean
+    private lateinit var query: String
+
+    interface OnAppClickListener {
+        fun onAppClicked(app: App, item: View)
+        fun onAppLongClicked(app: App, item: View)
+    }
+
+    init {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        iconPadding =
+            Utils.dpToPx(context, sharedPreferences.getString("icon_padding", "5")!!.toInt())
+        singleLine = sharedPreferences.getBoolean("single_line_labels", true)
+        when (sharedPreferences.getString("icon_shape", "circle")) {
+            "circle" -> iconBackground = R.drawable.circle
+            "round_rect" -> iconBackground = R.drawable.round_square
+            "default" -> iconBackground = -1
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, arg1: Int): ViewHolder {
+        val itemLayoutView = LayoutInflater.from(context)
+            .inflate(if (large) R.layout.app_entry_large else R.layout.app_entry, null)
+        return ViewHolder(itemLayoutView)
+    }
+
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+        val app = apps[position]
+        val name = app.name
+        if (::query.isInitialized) {
+            val spanStart =
+                name.lowercase(Locale.getDefault()).indexOf(query.lowercase(Locale.getDefault()))
+            val spanEnd = spanStart + query.length
+            if (spanStart != -1) {
+                val spannable = SpannableString(name)
+                spannable.setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    spanStart,
+                    spanEnd,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                viewHolder.nameTv.text = spannable
+            } else {
+                viewHolder.nameTv.text = name
+            }
+        } else {
+            viewHolder.nameTv.text = name
+        }
+
+        if (iconPackUtils != null)
+            viewHolder.iconIv.setImageDrawable(iconPackUtils.getAppThemedIcon(app.packageName))
+        else
+            viewHolder.iconIv.setImageDrawable(app.icon)
+        if (iconBackground != -1) {
+            viewHolder.iconIv.setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
+            viewHolder.iconIv.setBackgroundResource(iconBackground)
+            ColorUtils.applyColor(
+                viewHolder.iconIv,
+                ColorUtils.getDrawableDominantColor(viewHolder.iconIv.drawable)
+            )
+        }
+        viewHolder.bind(app, listener)
+    }
+
+    override fun getItemCount(): Int {
+        return apps.size
+    }
+
+    fun updateApps(newApps: List<App>) {
+        this.apps = newApps
+        this.allApps.clear()
+        this.allApps.addAll(newApps)
+        // If a query is active, re-apply it
+        if (::query.isInitialized && query.isNotEmpty()) {
+            filter(query)
+        } else {
+            this.apps = newApps
+            notifyDataSetChanged()
+        }
+    }
+
+    fun filter(query: String) {
+        val results = ArrayList<App>()
+        if (query.isEmpty()) {
+            this.query = ""
+        }
+        if (query.length > 1) {
+            if (query.matches("^[0-9]+(\\.[0-9]+)?[-+/*][0-9]+(\\.[0-9]+)?".toRegex())) {
+                results.add(
+                    App(
+                        Utils.solve(query).toString() + "", context.packageName + ".calc",
+                        ResourcesCompat.getDrawable(
+                            context.resources,
+                            R.drawable.ic_calculator,
+                            context.theme
+                        )!!
+                    )
+                )
+            } else {
+                for (app in allApps) {
+                    if (app.name.lowercase(Locale.getDefault())
+                            .contains(query.lowercase(Locale.getDefault()))
+                    ) results.add(app)
+                }
+            }
+            apps = results
+            this.query = query
+        } else {
+            apps = allApps
+        }
+        notifyDataSetChanged()
+    }
+
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var iconIv: ImageView = itemView.findViewById(R.id.app_icon_iv)
+        var nameTv: TextView = itemView.findViewById(R.id.app_name_tv)
+
+        init {
+            nameTv.maxLines = if (singleLine) 1 else 2
+        }
+
+        fun bind(app: App, listener: OnAppClickListener) {
+            itemView.setOnClickListener { view -> listener.onAppClicked(app, view) }
+            itemView.setOnLongClickListener { view ->
+                listener.onAppLongClicked(app, view)
+                true
+            }
+            itemView.setOnTouchListener { view, event ->
+                if (event.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                    listener.onAppLongClicked(app, view)
+                    return@setOnTouchListener true
+                }
+                false
+            }
+        }
+    }
+}

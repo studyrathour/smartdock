@@ -5,10 +5,10 @@ plugins {
 
 android {
     compileSdk 34
-    namespace "cu.axel.smartdock"
+    namespace "suraj.veera.launcher"
 	
     defaultConfig {
-        applicationId "cu.axel.smartdock"
+        applicationId "suraj.veera.launcher"
         minSdk 24
         targetSdk 34
         versionCode 1142

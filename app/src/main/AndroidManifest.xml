@@ -95,6 +95,11 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+        <activity
+            android:name=".activities.FileExplorerActivity"
+            android:exported="true"
+            android:label="File Explorer"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>
